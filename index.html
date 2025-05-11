@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>تحويل الصور إلى PDF</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --text-color: #2a4365;
+      --card-bg: #ffffff;
+      --button-bg: #2b6cb0;
+      --button-hover: #2c5282;
+      --button-glow: rgba(43, 108, 176, 0.6);
+      --progress-color: #38bdf8;
+      --icon-bg: rgba(0, 0, 0, 0.5);
+      --alert-error: #f87171;
+      --alert-warn: #facc15;
+    }
+
+    body.dark {
+      --bg-color: #1a202c;
+      --text-color: #e2e8f0;
+      --card-bg: #2d3748;
+      --button-bg: #4a90e2;
+      --button-hover: #2b6cb0;
+      --button-glow: rgba(74, 144, 226, 0.4);
+      --progress-color: #90cdf4;
+      --icon-bg: rgba(255, 255, 255, 0.2);
+      --alert-error: #f87171;
+      --alert-warn: #facc15;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      direction: rtl;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .mode-toggle {
+      text-align: left;
+      padding: 10px 20px;
+    }
+
+    .mode-toggle button {
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .mode-toggle button:hover {
+      background-color: var(--button-hover);
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 25px;
+    }
+
+    .dropzone {
+      border: 2px dashed #90cdf4;
+      padding: 30px;
+      border-radius: 15px;
+      background-color: var(--card-bg);
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .dropzone.dragover {
+      background-color: rgba(56, 189, 248, 0.1);
+      border-color: var(--progress-color);
+    }
+
+    .dropzone input {
+      display: none;
+    }
+
+    .dropzone p {
+      margin: 0;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    input[type="text"] {
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 15px;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+    }
+
+    #alert {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      max-width: 400px;
+      margin-inline: auto;
+      font-weight: bold;
+      display: none;
+    }
+    /* استايلات الأزرار الاجتماعية */
+.social-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.social-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 20px;
+  text-decoration: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: white;
+}
+
+.social-button i {
+  font-size: 25px;
+}
+
+.social-button.telegram {
+  background-color: #0088cc;
+}
+
+.social-button.instagram {
+  background-color: #e4405f;
+}
+
+.social-button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.social-button:active {
+  transform: translateY(2px);
+}
+
+    .alert-error {
+      background-color: var(--alert-error);
+      color: white;
+    }
+
+    .alert-warn {
+      background-color: var(--alert-warn);
+      color: black;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .img-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .img-container img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 12px;
+      transition: transform 0.3s ease;
+    }
+
+    .img-container:hover img {
+      transform: scale(1.03);
+    }
+
+    .img-actions {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    .img-container:hover .img-actions {
+      opacity: 1;
+    }
+
+    .img-actions button {
+      background-color: var(--icon-bg);
+      border: none;
+      color: white;
+      font-size: 18px;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .img-actions button:hover {
+      transform: scale(1.2);
+    }
+
+    #convertBtn {
+      margin-top: 25px;
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      font-size: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #convertBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px var(--button-glow);
+    }
+
+   
+
+    
+
+    
+
+    .footer {
+      margin-top: 50px;
+      font-size: 14px;
+      color: #718096;
+    }
+
+    @media (max-width: 500px) {
+      .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+    }
+
+    .language-selector {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .language-selector button {
+      background-color: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .language-selector button img {
+      width: 30px;
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="mode-toggle">
+    <button id="toggleMode">🌙 وضع الليل</button>
+  </div>
+  <div class="container">
+    <h1 data-ar="📸 تحويل الصور إلى PDF" data-en="📸 Convert Images to PDF">📸 تحويل الصور إلى PDF</h1>
+
+    <div class="language-selector">
+      <button id="arabicBtn" onclick="changeLanguage('ar')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Flag_of_Iraq.svg/320px-Flag_of_Iraq.svg.png" alt="العربية" />
+      </button>
+      <button id="englishBtn" onclick="changeLanguage('en')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_the_United_States.svg" alt="English" />
+      </button>
+    </div>
+
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="imageInput" accept="image/*" multiple />
+      <p data-ar="📂 اضغط أو اسحب الصور هنا لاختيارها" data-en="📂 Click or drag images here to select">📂 اضغط أو اسحب الصور هنا لاختيارها</p>
+    </div>
+
+    <input type="text" id="filenameInput" data-ar="أدخل اسم الملف بدون .pdf (افتراضي: الصور)" data-en="Enter filename without .pdf (default: images)" placeholder="أدخل اسم الملف بدون .pdf (افتراضي: الصور)" />
+    <div id="alert"></div>
+
+    <div class="gallery" id="gallery"></div>
+
+    <button id="convertBtn" data-ar="تحويل إلى PDF" data-en="Convert to PDF">تحويل إلى PDF</button>
+    
+
+    <div class="footer" data-ar="🧑‍💻 مبرمج الموقع: أحمد سلام الذهب" data-en="🧑‍💻 Site Developer: AHMEED SALAM ">
+    🧑‍💻 مبرمج الموقع: أحمد سلام الذهب
+</div>
+
+<div class="social-buttons">
+  <a href="https://t.me/amody7" class="social-button telegram" target="_blank" title="Telegram">
+    <i class="fab fa-telegram-plane"></i>
+  </a>
+  <a href="https://www.instagram.com/a0g0a" class="social-button instagram" target="_blank" title="Instagram">
+    <i class="fab fa-instagram"></i>
+  </a>
+</div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const imageInput = document.getElementById('imageInput');
+    const gallery = document.getElementById('gallery');
+    const convertBtn = document.getElementById('convertBtn');
+    const filenameInput = document.getElementById('filenameInput');
+    const toggleModeBtn = document.getElementById('toggleMode');
+    const alertBox = document.getElementById('alert');
+
+    let images = [];
+
+    function showAlert(msg, type = "warn") {
+      alertBox.textContent = msg;
+      alertBox.className = '';
+      alertBox.classList.add(type === "error" ? "alert-error" : "alert-warn");
+      alertBox.style.display = 'block';
+      setTimeout(() => alertBox.style.display = 'none', 3000);
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      toggleModeBtn.textContent = '☀️ وضع النهار';
+    }
+
+    toggleModeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      toggleModeBtn.textContent = isDark ? '☀️ وضع النهار' : '🌙 وضع الليل';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+
+    function changeLanguage(lang) {
+      if (lang === 'ar') {
+        document.documentElement.lang = 'ar';
+        document.body.setAttribute('dir', 'rtl');
+      } else {
+        document.documentElement.lang = 'en';
+        document.body.setAttribute('dir', 'ltr');
+      }
+      
+      const elements = document.querySelectorAll('[data-ar], [data-en]');
+      elements.forEach(element => {
+        element.textContent = element.getAttribute(`data-${lang}`);
+      });
+    }
+
+    dropzone.addEventListener('click', () => imageInput.click());
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+      console.log(images);
+    });
+
+    function handleFiles(files) {
+      Array.from(files).forEach(file => {
+        if (images.find(img => img.name === file.name)) {
+          showAlert(`⚠️ الصورة "${file.name}" مضافة مسبقًا.`, 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          images.push({ data: e.target.result, rotation: 0, name: file.name });
+          renderImages();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderImages() {
+      gallery.innerHTML = '';
+      images.forEach((img, index) => {
+        const container = document.createElement('div');
+        container.className = 'img-container';
+
+        const image = document.createElement('img');
+        image.src = img.data;
+        image.style.transform = `rotate(${img.rotation}deg)`;
+
+        const actions = document.createElement('div');
+        actions.className = 'img-actions';
+
+        const rotateLeft = document.createElement('button');
+        rotateLeft.innerHTML = '↩️';
+        rotateLeft.onclick = () => {
+          img.rotation -= 90;
+          renderImages();
+        };
+
+        const rotateRight = document.createElement('button');
+        rotateRight.innerHTML = '↪️';
+        rotateRight.onclick = () => {
+          img.rotation += 90;
+          renderImages();
+        };
+
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '❌';
+        removeBtn.onclick = () => {
+          images.splice(index, 1);
+          renderImages();
+        };
+
+        actions.append(rotateLeft, rotateRight, removeBtn);
+        container.append(image, actions);
+        gallery.appendChild(container);
+      });
+    }
+
+    convertBtn.addEventListener('click', () => {
+  if (images.length === 0) {
+    showAlert('⚠️ لا توجد صور لتحويلها.', 'error');
+    return;
+  }
+
+  const doc = new jsPDF();
+  
+  images.forEach((img, index) => {
+    if (index > 0) doc.addPage();
+
+    const imgData = img.data.split(',')[1]; // إزالة الجزء الخاص بـ Data URL
+    const imgType = img.data.startsWith('data:image/png') ? 'PNG' : 'JPEG'; // تحديد نوع الصورة بناءً على البيانات
+
+    console.log(`Adding image: ${imgType}`);  // سجل لتتبع البيانات ونوع الصورة
+
+    doc.addImage(imgData, imgType, 0, 0, 210, 297); // إضافة الصورة إلى الـ PDF
+  });
+
+  const filename = filenameInput.value || 'images';
+  doc.save(`${filename}.pdf`);
+});
+
+    changeLanguage('ar');
+  </script>
+</body>
+</html>
