@@ -314,6 +314,11 @@
       width: 30px;
       height: 20px;
     }
+    @font-face {
+   font-family: myFirstFont;
+   src: url(decotype-thuluth-ii.ttf);
+   
+}
   </style>
 </head>
 <body>
@@ -336,8 +341,10 @@
     <button id="convertBtn">تحويل إلى PDF</button>
     <div id="progressBar"><div class="bar"></div></div>
 
-    <div class="footer">🧑‍💻 مبرمج الموقع: <strong>أحمد سلام الذهب</strong></div>
-  </div>
+    <div class="footer" data-ar="🧑‍💻 مبرمج الموقع: أحمد سلام الذهب" data-en="🧑‍💻 Site Developer: AHMEED SALAM " style="font-family:myFirstFont; font-size: 70px;">
+  🧑‍💻 مبرمج الموقع: أحمد سلام الذهب
+</div>
+
   <div class="social-buttons">
   <a href="https://t.me/amody7" class="social-button telegram" target="_blank" title="Telegram">
     <i class="fab fa-telegram-plane"></i>
