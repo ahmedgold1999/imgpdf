@@ -292,42 +292,23 @@
     <button id="toggleMode">🌙 وضع الليل</button>
   </div>
   <div class="container">
-    <h1 data-ar="📸 تحويل الصور إلى PDF" data-en="📸 Convert Images to PDF">📸 تحويل الصور إلى PDF</h1>
-
-    <div class="language-selector">
-      <button id="arabicBtn" onclick="changeLanguage('ar')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Flag_of_Iraq.svg/320px-Flag_of_Iraq.svg.png" alt="العربية" />
-      </button>
-      <button id="englishBtn" onclick="changeLanguage('en')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Flag_of_the_United_States.svg" alt="English" />
-      </button>
-    </div>
+    <h1>📸 تحويل الصور إلى PDF</h1>
 
     <div class="dropzone" id="dropzone">
       <input type="file" id="imageInput" accept="image/*" multiple />
-      <p data-ar="📂 اضغط أو اسحب الصور هنا لاختيارها" data-en="📂 Click or drag images here to select">📂 اضغط أو اسحب الصور هنا لاختيارها</p>
+      <p>📂 اضغط أو اسحب الصور هنا لاختيارها</p>
     </div>
 
-    <input type="text" id="filenameInput" data-ar="أدخل اسم الملف بدون .pdf (افتراضي: الصور)" data-en="Enter filename without .pdf (default: images)" placeholder="أدخل اسم الملف بدون .pdf (افتراضي: الصور)" />
+    <input type="text" id="filenameInput" placeholder="أدخل اسم الملف بدون .pdf (افتراضي: الصور)" />
     <div id="alert"></div>
 
     <div class="gallery" id="gallery"></div>
 
-    <button id="convertBtn" data-ar="تحويل إلى PDF" data-en="Convert to PDF">تحويل إلى PDF</button>
-    
+    <button id="convertBtn">تحويل إلى PDF</button>
+    <div id="progressBar"><div class="bar"></div></div>
 
-    <div class="footer" data-ar="🧑‍💻 مبرمج الموقع: أحمد سلام الذهب" data-en="🧑‍💻 Site Developer: AHMEED SALAM ">
-    🧑‍💻 مبرمج الموقع: أحمد سلام الذهب
-</div>
-
-<div class="social-buttons">
-  <a href="https://t.me/amody7" class="social-button telegram" target="_blank" title="Telegram">
-    <i class="fab fa-telegram-plane"></i>
-  </a>
-  <a href="https://www.instagram.com/a0g0a" class="social-button instagram" target="_blank" title="Instagram">
-    <i class="fab fa-instagram"></i>
-  </a>
-</div>
+    <div class="footer">🧑‍💻 مبرمج الموقع: <strong>أحمد سلام الذهب</strong></div>
+  </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
