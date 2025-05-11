@@ -334,6 +334,8 @@
   <script>
     const dropzone = document.getElementById('dropzone');
     const imageInput = document.getElementById('imageInput');
+    const imgData = img.data.split(',')[1]; // تأكد من إزالة الجزء الذي يحتوي على Data URL
+    const imgType = img.data.startsWith('data:image/png') ? 'PNG' : 'JPEG'; // تحديد نوع الصورة
     const gallery = document.getElementById('gallery');
     const convertBtn = document.getElementById('convertBtn');
     const filenameInput = document.getElementById('filenameInput');
@@ -408,11 +410,11 @@
 
         const reader = new FileReader();
         reader.onload = function (e) {
-          images.push({ data: e.target.result, rotation: 0, name: file.name });
-          renderImages();
-        };
-        reader.readAsDataURL(file);
-      });
+  console.log('Image loaded:', e.target.result);
+  images.push({ data: e.target.result, rotation: 0, name: file.name });
+  renderImages();
+};
+
     }
 
     function renderImages() {
@@ -456,6 +458,7 @@
     }
 
     convertBtn.addEventListener('click', () => {
+  console.log('Images before conversion:', images);
   if (images.length === 0) {
     showAlert('⚠️ لا توجد صور لتحويلها.', 'error');
     return;
