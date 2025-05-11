@@ -330,15 +330,13 @@
 </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
   <script>
     const dropzone = document.getElementById('dropzone');
     const imageInput = document.getElementById('imageInput');
-    const imgData = img.data.split(',')[1]; // تأكد من إزالة الجزء الذي يحتوي على Data URL
-    const imgType = img.data.startsWith('data:image/png') ? 'PNG' : 'JPEG'; // تحديد نوع الصورة
     const gallery = document.getElementById('gallery');
     const convertBtn = document.getElementById('convertBtn');
     const filenameInput = document.getElementById('filenameInput');
+    const progressBar = document.getElementById('progressBar');
     const toggleModeBtn = document.getElementById('toggleMode');
     const alertBox = document.getElementById('alert');
 
@@ -364,21 +362,6 @@
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
     });
 
-    function changeLanguage(lang) {
-      if (lang === 'ar') {
-        document.documentElement.lang = 'ar';
-        document.body.setAttribute('dir', 'rtl');
-      } else {
-        document.documentElement.lang = 'en';
-        document.body.setAttribute('dir', 'ltr');
-      }
-      
-      const elements = document.querySelectorAll('[data-ar], [data-en]');
-      elements.forEach(element => {
-        element.textContent = element.getAttribute(`data-${lang}`);
-      });
-    }
-
     dropzone.addEventListener('click', () => imageInput.click());
 
     dropzone.addEventListener('dragover', (e) => {
@@ -398,7 +381,6 @@
 
     imageInput.addEventListener('change', (e) => {
       handleFiles(e.target.files);
-      console.log(images);
     });
 
     function handleFiles(files) {
@@ -410,11 +392,11 @@
 
         const reader = new FileReader();
         reader.onload = function (e) {
-  console.log('Image loaded:', e.target.result);
-  images.push({ data: e.target.result, rotation: 0, name: file.name });
-  renderImages();
-};
-
+          images.push({ data: e.target.result, rotation: 0, name: file.name });
+          renderImages();
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
     function renderImages() {
@@ -445,43 +427,74 @@
         };
 
         const removeBtn = document.createElement('button');
-        removeBtn.innerHTML = '❌';
+        removeBtn.innerHTML = '🗑️';
         removeBtn.onclick = () => {
           images.splice(index, 1);
           renderImages();
         };
 
-        actions.append(rotateLeft, rotateRight, removeBtn);
-        container.append(image, actions);
+        actions.appendChild(rotateLeft);
+        actions.appendChild(removeBtn);
+        actions.appendChild(rotateRight);
+
+        container.appendChild(image);
+        container.appendChild(actions);
         gallery.appendChild(container);
       });
     }
 
-    convertBtn.addEventListener('click', () => {
-  console.log('Images before conversion:', images);
-  if (images.length === 0) {
-    showAlert('⚠️ لا توجد صور لتحويلها.', 'error');
-    return;
-  }
+    convertBtn.addEventListener('click', async () => {
+      if (images.length === 0) {
+        alert("يرجى رفع صور أولاً.");
+        return;
+      }
 
-  const doc = new jsPDF();
-  
-  images.forEach((img, index) => {
-    if (index > 0) doc.addPage();
+      progressBar.style.display = 'block';
+      convertBtn.disabled = true;
 
-    const imgData = img.data.split(',')[1]; // إزالة الجزء الخاص بـ Data URL
-    const imgType = img.data.startsWith('data:image/png') ? 'PNG' : 'JPEG'; // تحديد نوع الصورة بناءً على البيانات
+      const filename = filenameInput.value.trim() || "الصور";
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
 
-    console.log(`Adding image: ${imgType}`);  // سجل لتتبع البيانات ونوع الصورة
+      for (let i = 0; i < images.length; i++) {
+        const img = new Image();
+        img.src = images[i].data;
+        const rotation = images[i].rotation % 360;
 
-    doc.addImage(imgData, imgType, 0, 0, 210, 297); // إضافة الصورة إلى الـ PDF
-  });
+        await new Promise(resolve => {
+          img.onload = () => {
+            const width = pdf.internal.pageSize.getWidth();
+            const height = pdf.internal.pageSize.getHeight();
 
-  const filename = filenameInput.value || 'images';
-  doc.save(`${filename}.pdf`);
-});
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-    changeLanguage('ar');
+            const rad = rotation * Math.PI / 180;
+            const isRotated = rotation % 180 !== 0;
+
+            canvas.width = isRotated ? img.height : img.width;
+            canvas.height = isRotated ? img.width : img.height;
+
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(rad);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+            const rotatedData = canvas.toDataURL('image/jpeg');
+
+            pdf.addImage(rotatedData, 'JPEG', 0, 0, width, height);
+            if (i < images.length - 1) pdf.addPage();
+            resolve();
+          };
+        });
+      }
+
+      setTimeout(() => {
+        pdf.save(`${filename}.pdf`);
+        convertBtn.disabled = false;
+        progressBar.style.display = 'none';
+      }, 600);
+    });
   </script>
 </body>
 </html>
+
